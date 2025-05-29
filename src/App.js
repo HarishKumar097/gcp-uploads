@@ -7,8 +7,10 @@ function App() {
 
   const handleChunkSizeChange = (e) => {
     const value = parseInt(e.target.value);
-    if (!isNaN(value) && value > 0) {
-      setChunkSize(value);
+    if (!isNaN(value)) {
+      // Ensure value is between 5 and 500
+      const validValue = Math.min(Math.max(value, 5), 500);
+      setChunkSize(validValue);
     }
   };
 
@@ -22,10 +24,11 @@ function App() {
           value={chunkSize}
           onChange={handleChunkSizeChange}
           min="5"
+          max="500"
           step="1"
           className="chunk-size-input"
         />
-        <small className="chunk-size-hint">Minimum: 5MB</small>
+        <small className="chunk-size-hint">Range: 5MB - 500MB</small>
       </div>
       <FileUploader chunkSize={chunkSize} />
       <FileUploader chunkSize={chunkSize} />
