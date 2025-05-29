@@ -6,7 +6,6 @@ const FileUploader = ({ chunkSize = 5 }) => {
   const [file, setFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('');
-  const [signedUrl, setSignedUrl] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [fileUploader, setFileUploader] = useState(null);
@@ -38,7 +37,6 @@ const FileUploader = ({ chunkSize = 5 }) => {
     setFile(null);
     setUploadProgress(0);
     setUploadStatus('');
-    setSignedUrl('');
     setIsDragging(false);
     setIsPaused(false);
     setFileUploader(null);
@@ -80,7 +78,6 @@ const FileUploader = ({ chunkSize = 5 }) => {
       });
       const data = await response.json();
       if (data?.success) {
-        setSignedUrl(data?.data?.url);
         return data?.data?.url;
       }
     } catch (error) {
