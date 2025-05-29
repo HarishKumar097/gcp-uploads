@@ -1,23 +1,34 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import FileUploader from './components/FileUploader';
 import './App.css';
 
 function App() {
+  const [chunkSize, setChunkSize] = useState(5); // Default 5MB
+
+  const handleChunkSizeChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      setChunkSize(value);
+    }
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="chunk-size-container">
+        <label htmlFor="chunk-size">Chunk Size (MB):</label>
+        <input
+          type="number"
+          id="chunk-size"
+          value={chunkSize}
+          onChange={handleChunkSizeChange}
+          min="5"
+          step="1"
+          className="chunk-size-input"
+        />
+        <small className="chunk-size-hint">Minimum: 5MB</small>
+      </div>
+      <FileUploader chunkSize={chunkSize} />
+      <FileUploader chunkSize={chunkSize} />
     </div>
   );
 }
