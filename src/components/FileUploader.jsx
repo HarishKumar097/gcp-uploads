@@ -14,6 +14,7 @@ const FileUploader = ({ chunkSize = 5 }) => {
   const [isAborted, setIsAborted] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [chunkInfo, setChunkInfo] = useState({ currentChunk: 0, totalChunks: 0 });
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => {
@@ -47,6 +48,7 @@ const FileUploader = ({ chunkSize = 5 }) => {
     setIsAborted(false);
     setIsOffline(!navigator.onLine);
     setChunkInfo({ currentChunk: 0, totalChunks: 0 });
+    setHasError(false);
   };
 
   const getSignedUrl = async () => {
@@ -94,6 +96,7 @@ const FileUploader = ({ chunkSize = 5 }) => {
 
     setFile(selectedFile);
     setUploadStatus('Getting signed URL...');
+    setHasError(false);
     
     const url = await getSignedUrl();
     if (!url) return;
@@ -107,21 +110,14 @@ const FileUploader = ({ chunkSize = 5 }) => {
     setFileUploader(uploader);
 
     uploader.on("progress", (event) => {
-      console.log("Upload Progress:", event.detail);
       setUploadProgress(event.detail.progress);
       setUploadStatus(`Uploading: ${Math.round(event.detail.progress)}%`);
     });
 
-    uploader.on("chunkAttempt", (event) => {
-      setChunkInfo({
-        currentChunk: event.detail.chunkNumber,
-        totalChunks: event.detail.totalChunks
-      });
-    });
-
     uploader.on("error", (event) => {
-      console.error("Upload Error:", event.detail.message);
-      setUploadStatus(`Error: ${event.detail.message}`);
+      
+      setUploadStatus(`${event.detail.message}`);
+      setHasError(true);
     });
 
     uploader.on("success", (event) => {
@@ -129,17 +125,12 @@ const FileUploader = ({ chunkSize = 5 }) => {
       setIsUploadComplete(true);
     });
 
-    uploader.on("attempt", (event) => {
-      console.log("Chunk Upload Attempt:", event.detail);
-    });
+    uploader.on("chunkAttempt", (event) => {
 
-    uploader.on("chunkAttemptFailure", (event) => {
-      console.log("Chunk Attempt Failure:", event.detail);
-      setUploadStatus('Chunk upload failed, retrying...');
-    });
-
-    uploader.on("chunkSuccess", (event) => {
-      console.log("Chunk Successfully Uploaded:", event.detail);
+      setChunkInfo({
+        currentChunk: event.detail.chunkNumber,
+        totalChunks: event.detail.totalChunks
+      });
     });
 
     uploader.on("offline", (event) => {
@@ -226,7 +217,7 @@ const FileUploader = ({ chunkSize = 5 }) => {
       ) : (
         <div className="upload-info">
           <p className="file-name">Selected file: {file.name}</p>
-          <p className="status">{uploadStatus}</p>
+          <p className={`status ${hasError ? 'error' : ''}`}>{uploadStatus}</p>
           {chunkInfo.totalChunks > 0 && (
             <p className="chunk-info">
               Chunk {chunkInfo.currentChunk} / {chunkInfo.totalChunks}
@@ -239,7 +230,7 @@ const FileUploader = ({ chunkSize = 5 }) => {
             />
           </div>
           <div className="control-buttons-container">
-            {uploadProgress > 0 && uploadProgress < 100 && !isAborted && (
+            {uploadProgress > 0 && uploadProgress < 100 && !isAborted && !hasError && (
               <>
                 <button 
                   className={`control-button ${isPaused ? 'resume' : 'pause'} ${isOffline ? 'disabled' : ''}`}
@@ -257,7 +248,7 @@ const FileUploader = ({ chunkSize = 5 }) => {
                 </button>
               </>
             )}
-            {(isUploadComplete || isAborted) && (
+            {(isUploadComplete || isAborted || hasError) && (
               <button 
                 className="control-button upload-again"
                 onClick={handleUploadAgain}
