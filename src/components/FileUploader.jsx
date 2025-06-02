@@ -52,8 +52,8 @@ const FileUploader = ({ chunkSize = 5 }) => {
   };
 
   const getSignedUrl = async () => {
-    const accessTokenId = 'a0abcf55-b8c4-4527-8363-c036ef093196';
-    const secretKey = '71b2d7f0-ac73-4388-bc9c-6568be59edc2';
+    const accessTokenId = 'a2fb727c-ea5b-4af8-8c14-873cefa809a6';
+    const secretKey = 'e0afd2b4-89ac-418b-b679-a66d4b0ea7ff';
     const url = 'https://venus-v1.fastpix.dev/on-demand/uploads/v2';
     const requestData = {
       corsOrigin: "*",
