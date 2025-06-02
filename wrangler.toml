@@ -1,0 +1,3 @@
+name = "gcp-resumable-uploads"
+compatibility_date = "2025-05-29"
+assets = {directory = "build"}

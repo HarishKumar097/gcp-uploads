@@ -154,3 +154,10 @@
 .control-button.upload-again:hover {
   background-color: #0056b3;
 }
+
+.chunk-info {
+  margin: 0.5rem 0;
+  color: #6c757d;
+  font-size: 0.875rem;
+  text-align: center;
+}

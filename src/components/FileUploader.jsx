@@ -6,12 +6,14 @@ const FileUploader = ({ chunkSize = 5 }) => {
   const [file, setFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [signedUrl, setSignedUrl] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [fileUploader, setFileUploader] = useState(null);
   const [isUploadComplete, setIsUploadComplete] = useState(false);
   const [isAborted, setIsAborted] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [chunkInfo, setChunkInfo] = useState({ currentChunk: 0, totalChunks: 0 });
 
   useEffect(() => {
     const handleOnline = () => {
@@ -37,12 +39,14 @@ const FileUploader = ({ chunkSize = 5 }) => {
     setFile(null);
     setUploadProgress(0);
     setUploadStatus('');
+    setSignedUrl('');
     setIsDragging(false);
     setIsPaused(false);
     setFileUploader(null);
     setIsUploadComplete(false);
     setIsAborted(false);
     setIsOffline(!navigator.onLine);
+    setChunkInfo({ currentChunk: 0, totalChunks: 0 });
   };
 
   const getSignedUrl = async () => {
@@ -106,6 +110,13 @@ const FileUploader = ({ chunkSize = 5 }) => {
       console.log("Upload Progress:", event.detail);
       setUploadProgress(event.detail.progress);
       setUploadStatus(`Uploading: ${Math.round(event.detail.progress)}%`);
+    });
+
+    uploader.on("chunkAttempt", (event) => {
+      setChunkInfo({
+        currentChunk: event.detail.chunkNumber,
+        totalChunks: event.detail.totalChunks
+      });
     });
 
     uploader.on("error", (event) => {
@@ -216,6 +227,11 @@ const FileUploader = ({ chunkSize = 5 }) => {
         <div className="upload-info">
           <p className="file-name">Selected file: {file.name}</p>
           <p className="status">{uploadStatus}</p>
+          {chunkInfo.totalChunks > 0 && (
+            <p className="chunk-info">
+              Chunk {chunkInfo.currentChunk} / {chunkInfo.totalChunks}
+            </p>
+          )}
           <div className="progress-bar">
             <div
               className="progress-fill"
