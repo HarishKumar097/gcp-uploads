@@ -100,11 +100,12 @@ const FileUploader = ({ chunkSize = 5 }) => {
     
     const url = await getSignedUrl();
     if (!url) return;
-
+    
+    try {
     const uploader = Uploader.init({
       endpoint: url,
       file: selectedFile,
-      chunkSize: chunkSize * 1024,
+      chunkSize: isNaN(chunkSize) ? 5 * 1024 : chunkSize * 1024,
     });
 
     setFileUploader(uploader);
@@ -115,7 +116,6 @@ const FileUploader = ({ chunkSize = 5 }) => {
     });
 
     uploader.on("error", (event) => {
-      
       setUploadStatus(`${event.detail.message}`);
       setHasError(true);
     });
@@ -136,6 +136,10 @@ const FileUploader = ({ chunkSize = 5 }) => {
     uploader.on("offline", (event) => {
       setUploadStatus(event.detail.message);
     });
+    } catch (error) {
+      setUploadStatus(error.message ?? 'Error uploading file');
+      setHasError(true);
+    }
   };
 
   const handlePause = () => {
@@ -165,6 +169,8 @@ const FileUploader = ({ chunkSize = 5 }) => {
   const handleUploadAgain = () => {
     if (fileUploader) {
       fileUploader.retryUpload();
+      resetStates();
+    } else {
       resetStates();
     }
   };

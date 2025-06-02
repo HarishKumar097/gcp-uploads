@@ -3,14 +3,14 @@ import FileUploader from './components/FileUploader';
 import './App.css';
 
 function App() {
-  const [chunkSize, setChunkSize] = useState(5); // Default 5MB
+  const [chunkSize, setChunkSize] = useState(5);
 
   const handleChunkSizeChange = (e) => {
-    const value = parseInt(e.target.value);
-    if (!isNaN(value)) {
-      // Ensure value is between 5 and 500
-      const validValue = Math.min(Math.max(value, 5), 500);
-      setChunkSize(validValue);
+    const value = e.target.value;
+    if (value === "") {
+      setChunkSize(5);
+    } else {
+      setChunkSize(parseInt(value));
     }
   };
 
@@ -19,13 +19,9 @@ function App() {
       <div className="chunk-size-container">
         <label htmlFor="chunk-size">Chunk Size (MB):</label>
         <input
-          type="number"
+          type="text"
           id="chunk-size"
-          value={chunkSize}
           onChange={handleChunkSizeChange}
-          min="5"
-          max="500"
-          step="1"
           className="chunk-size-input"
         />
         <small className="chunk-size-hint">Range: 5MB - 500MB</small>
