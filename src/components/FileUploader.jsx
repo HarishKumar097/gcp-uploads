@@ -239,16 +239,14 @@ const FileUploader = ({ chunkSize = 5 }) => {
             {uploadProgress > 0 && uploadProgress < 100 && !isAborted && !hasError && (
               <>
                 <button 
-                  className={`control-button ${isPaused ? 'resume' : 'pause'} ${isOffline ? 'disabled' : ''}`}
+                  className={`control-button ${isPaused ? 'resume' : 'pause'}`}
                   onClick={isPaused ? handleResume : handlePause}
-                  disabled={isOffline}
                 >
                   {isPaused ? 'Resume' : 'Pause'}
                 </button>
                 <button 
-                  className={`control-button abort ${isOffline ? 'disabled' : ''}`}
+                  className={`control-button abort`}
                   onClick={handleAbort}
-                  disabled={isOffline}
                 >
                   Abort
                 </button>

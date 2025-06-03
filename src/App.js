@@ -27,6 +27,7 @@ function App() {
         <small className="chunk-size-hint">Range: 5MB - 500MB</small>
       </div>
       <FileUploader chunkSize={chunkSize} />
+      <FileUploader chunkSize={chunkSize} />
     </div>
   );
 }
