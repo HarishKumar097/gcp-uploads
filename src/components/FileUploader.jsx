@@ -88,6 +88,7 @@ const FileUploader = ({ chunkSize = 5 }) => {
       }
     } catch (error) {
       setUploadStatus('Error getting signed URL');
+      setHasError(true);
     }
   };
 
