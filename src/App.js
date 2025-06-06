@@ -7,10 +7,16 @@ function App() {
 
   const handleChunkSizeChange = (e) => {
     const value = e.target.value;
-    if (value === "") {
-      setChunkSize(5);
-    } else {
-      setChunkSize(parseInt(value));
+    // Allow empty input for better UX
+    if (value === '') {
+      setChunkSize('');
+      return;
+    }
+
+    // Allow negative numbers and 0
+    const numValue = parseInt(value);
+    if (!isNaN(numValue)) {
+      setChunkSize(numValue);
     }
   };
 
@@ -19,15 +25,23 @@ function App() {
       <div className="chunk-size-container">
         <label htmlFor="chunk-size">Chunk Size (MB):</label>
         <input
-          type="text"
+          type="number"
           id="chunk-size"
           onChange={handleChunkSizeChange}
           className="chunk-size-input"
         />
         <small className="chunk-size-hint">Range: 5MB - 500MB</small>
       </div>
-      <FileUploader chunkSize={chunkSize} />
-      <FileUploader chunkSize={chunkSize} />
+      <div className="uploaders-container">
+        <FileUploader 
+          chunkSize={chunkSize} 
+          uploaderId="uploader1"
+        />
+        <FileUploader 
+          chunkSize={chunkSize} 
+          uploaderId="uploader2"
+        />
+      </div>
     </div>
   );
 }

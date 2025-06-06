@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Uploader } from 'gcp-res-upload';
 import './FileUploader.css';
 
-const FileUploader = ({ chunkSize = 5 }) => {
+const FileUploader = ({ chunkSize = 5, uploaderId, title }) => {
   const [file, setFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('');
@@ -56,18 +56,13 @@ const FileUploader = ({ chunkSize = 5 }) => {
     const secretKey = '4b2f893e-05e7-498f-af0f-67d37354e861';
     const url = 'https://venus-v1.fastpix.dev/on-demand/uploads/v2';
     const requestData = {
-      corsOrigin: "*",
-      pushMediaSettings: {
-        accessPolicy: "public",
-        createSubtitles: {
-          name: "name",
-          metadata: {
-            key1: "value1"
-          },
-          languageCode: "en-us"
+      "corsOrigin": "*",
+      "pushMediaSettings": {
+        "metadata": {
+          "key1": "value1"
         },
-        optimizeAudio: true,
-        maxResolution: "1080p"
+        "accessPolicy": "public",
+        "maxResolution": "1080p"
       }
     };
 
@@ -78,7 +73,8 @@ const FileUploader = ({ chunkSize = 5 }) => {
         method: 'POST',
         headers: {
           'Authorization': `Basic ${encodedCredentials}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-Client-Type': 'web-browser'
         },
         body: JSON.stringify(requestData)
       });
@@ -98,45 +94,46 @@ const FileUploader = ({ chunkSize = 5 }) => {
     setFile(selectedFile);
     setUploadStatus('Getting signed URL...');
     setHasError(false);
-    
+
     const url = await getSignedUrl();
     if (!url) return;
-    
+
     try {
-    const uploader = Uploader.init({
-      endpoint: url,
-      file: selectedFile,
-      chunkSize: isNaN(chunkSize) ? 5 * 1024 : chunkSize * 1024,
-    });
-
-    setFileUploader(uploader);
-
-    uploader.on("progress", (event) => {
-      setUploadProgress(event.detail.progress);
-      setUploadStatus(`Uploading: ${Math.round(event.detail.progress)}%`);
-    });
-
-    uploader.on("error", (event) => {
-      setUploadStatus(`${event.detail.message}`);
-      setHasError(true);
-    });
-
-    uploader.on("success", (event) => {
-      setUploadStatus('Upload Completed Successfully');
-      setIsUploadComplete(true);
-    });
-
-    uploader.on("chunkAttempt", (event) => {
-
-      setChunkInfo({
-        currentChunk: event.detail.chunkNumber,
-        totalChunks: event.detail.totalChunks
+      const uploader = Uploader.init({
+        endpoint: url,
+        file: selectedFile,
+        chunkSize: isNaN(chunkSize) ? 5 * 1024 : chunkSize * 1024,
+        delayRetry: 0
       });
-    });
 
-    uploader.on("offline", (event) => {
-      setUploadStatus(event.detail.message);
-    });
+      setFileUploader(uploader);
+
+      uploader.on("progress", (event) => {
+        setUploadProgress(event.detail.progress);
+        setUploadStatus(`Uploading: ${Math.round(event.detail.progress)}%`);
+      });
+
+      uploader.on("error", (event) => {
+        setUploadStatus(`${event.detail.message}`);
+        setHasError(true);
+      });
+
+      uploader.on("success", (event) => {
+        setUploadStatus('Upload Completed Successfully');
+        setIsUploadComplete(true);
+      });
+
+      uploader.on("chunkAttempt", (event) => {
+
+        setChunkInfo({
+          currentChunk: event.detail.chunkNumber,
+          totalChunks: event.detail.totalChunks
+        });
+      });
+
+      uploader.on("offline", (event) => {
+        setUploadStatus(event.detail.message);
+      });
     } catch (error) {
       setUploadStatus(error.message ?? 'Error uploading file');
       setHasError(true);
@@ -179,19 +176,19 @@ const FileUploader = ({ chunkSize = 5 }) => {
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
     setIsDragging(true);
-  }, []);
+  }, [chunkSize]);
 
   const handleDragLeave = useCallback((e) => {
     e.preventDefault();
     setIsDragging(false);
-  }, []);
+  }, [chunkSize]);
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     setIsDragging(false);
     const droppedFile = e.dataTransfer.files[0];
     handleFileUpload(droppedFile);
-  }, []);
+  }, [chunkSize]);
 
   const handleFileInput = (e) => {
     const selectedFile = e.target.files[0];
@@ -200,6 +197,7 @@ const FileUploader = ({ chunkSize = 5 }) => {
 
   return (
     <div className="file-uploader">
+      <h3 className="uploader-title">{title}</h3>
       {!file ? (
         <div
           className={`drop-zone ${isDragging ? 'dragging' : ''}`}
@@ -212,11 +210,15 @@ const FileUploader = ({ chunkSize = 5 }) => {
             <p className="or-text">or</p>
             <input
               type="file"
-              id="file-input"
+              id={`file-input-${uploaderId}`}
               onChange={handleFileInput}
+              accept="video/*"
               style={{ display: 'none' }}
             />
-            <label htmlFor="file-input" className="upload-button">
+            <label 
+              htmlFor={`file-input-${uploaderId}`} 
+              className="upload-button"
+            >
               Upload
             </label>
           </div>
@@ -239,13 +241,13 @@ const FileUploader = ({ chunkSize = 5 }) => {
           <div className="control-buttons-container">
             {uploadProgress > 0 && uploadProgress < 100 && !isAborted && !hasError && (
               <>
-                <button 
+                <button
                   className={`control-button ${isPaused ? 'resume' : 'pause'}`}
                   onClick={isPaused ? handleResume : handlePause}
                 >
                   {isPaused ? 'Resume' : 'Pause'}
                 </button>
-                <button 
+                <button
                   className={`control-button abort`}
                   onClick={handleAbort}
                 >
@@ -254,7 +256,7 @@ const FileUploader = ({ chunkSize = 5 }) => {
               </>
             )}
             {(isUploadComplete || isAborted || hasError) && (
-              <button 
+              <button
                 className="control-button upload-again"
                 onClick={handleUploadAgain}
               >
