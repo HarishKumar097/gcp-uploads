@@ -54,7 +54,7 @@ const FileUploader = ({ chunkSize = 5, uploaderId, title }) => {
   const getSignedUrl = async () => {
     const accessTokenId = 'e9c1948a-cf6d-466d-8631-706c82e61fc2';
     const secretKey = '4b2f893e-05e7-498f-af0f-67d37354e861';
-    const url = 'https://venus-v1.fastpix.dev/on-demand/uploads/v2';
+    const url = 'https://venus-v1.fastpix.dev/on-demand/upload';
     const requestData = {
       "corsOrigin": "*",
       "pushMediaSettings": {
